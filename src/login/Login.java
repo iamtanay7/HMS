@@ -1,12 +1,17 @@
 package login;
 
+import java.util.ArrayList;
+
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -23,9 +28,12 @@ public class Login extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
+  
     @Override
     public void start(Stage primaryStage) {
+    	try {
+			
+		    	//Welcome page
     	window = primaryStage;
         primaryStage.setTitle("JavaFX Welcome");
         GridPane grid = new GridPane();
@@ -61,14 +69,14 @@ public class Login extends Application {
         Scene scene = new Scene(grid, 300, 275);
         
 
-        
+        //Dashboard page
         
         GridPane dashboard = new GridPane();
         dashboard.setAlignment(Pos.CENTER);
         dashboard.setHgap(10);
         dashboard.setVgap(10);
         dashboard.setPadding(new Insets(25, 25, 25, 25));
-        Button back = new Button("Go Back");
+        Button back = new Button("Logout");
         Button newPatient = new Button("New Patient registration");
         Button modifyPatient = new Button("View/modify patient records");
         Button modifyStaff = new Button("View/modify staff details");
@@ -84,8 +92,8 @@ public class Login extends Application {
         
         
         back.setOnAction(e->window.setScene(scene));
-        Scene scene2 = new Scene(dashboard,300,275);
-        btn.setOnAction(e->window.setScene(scene2));
+        Scene dashboardScene = new Scene(dashboard,300,275);
+        btn.setOnAction(e->window.setScene(dashboardScene));
         
         window.setScene(scene);
         window.show();
@@ -94,12 +102,17 @@ public class Login extends Application {
         
         
         
+        //New patient registration
+        GridPane newPatientGrid = new GridPane();
+        newPatientGrid.setAlignment(Pos.CENTER);
+        newPatientGrid.setHgap(10);
+        newPatientGrid.setVgap(10);
+        newPatientGrid.setPadding(new Insets(25, 25, 25, 25));
+        Text newPatientText = new Text("New Patient Registration");
+        newPatientText.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        newPatientGrid.add(newPatientText, 0, 0, 2, 1);
         
-        GridPane newP = new GridPane();
-        newP.setAlignment(Pos.CENTER);
-        newP.setHgap(10);
-        newP.setVgap(10);
-        newP.setPadding(new Insets(25, 25, 25, 25));
+        
         Label name = new Label("Patient Name: ");
         Label email = new Label("Patient email address: ");
         Label phone = new Label("Patient phone number: ");
@@ -109,26 +122,140 @@ public class Login extends Application {
         Label currAddress = new Label("Current Address: ");
         Label permanentAddress = new Label("Permanent Address: ");
         
+        TextField nameTextField = new TextField();
+        TextField emailTextField = new TextField();
+        TextField phoneTextField = new TextField();
+        TextField egNameTextField = new TextField();
+        TextField egPhoneTextField = new TextField();
+        TextField reasonTextField = new TextField();
+        TextField currAddressTextField = new TextField();
+        TextField permanentAddressTextField = new TextField();
+        
 
         
         
         Button submit = new Button("Submit");
         Button back2 = new Button("Back");
-        back2.setOnAction(e->window.setScene(scene2));
-        newP.add(back2, 0, 0);
-        newP.add(name, 0, 1);
-        newP.add(email, 0, 2);
-        newP.add(phone, 0, 3);
-        newP.add(egName, 0, 4);
-        newP.add(egPhone, 0, 5);
-        newP.add(reason, 0, 6);
-        newP.add(currAddress, 0, 7);
-        newP.add(permanentAddress, 0, 8);
-        newP.add(submit,0,9);
+        back2.setOnAction(e->window.setScene(dashboardScene));
+        newPatientGrid.add(name, 0, 1);
+        newPatientGrid.add(email, 0, 2);
+        newPatientGrid.add(phone, 0, 3);
+        newPatientGrid.add(egName, 0, 4);
+        newPatientGrid.add(egPhone, 0, 5);
+        newPatientGrid.add(reason, 0, 6);
+        newPatientGrid.add(currAddress, 0, 7);
+        newPatientGrid.add(permanentAddress, 0, 8);
+        newPatientGrid.add(submit,0,9);
+        newPatientGrid.add(back2, 1, 9);
+
         
-        Scene patientRegistration = new Scene(newP);
+        newPatientGrid.add(nameTextField, 1, 1);
+        newPatientGrid.add(emailTextField, 1, 2);
+        newPatientGrid.add(phoneTextField, 1, 3);
+        newPatientGrid.add(egNameTextField, 1, 4);
+        newPatientGrid.add(egPhoneTextField, 1, 5);
+        newPatientGrid.add(reasonTextField, 1, 6);
+        newPatientGrid.add(currAddressTextField, 1, 7);
+        newPatientGrid.add(permanentAddressTextField, 1, 8);
+        
+        Scene patientRegistration = new Scene(newPatientGrid);
         newPatient.setOnAction(e->window.setScene(patientRegistration));
         
         
+        //Registration successful
+        GridPane regSuccessGridPane = new GridPane();
+        regSuccessGridPane.setAlignment(Pos.CENTER);
+        regSuccessGridPane.setHgap(10);
+        regSuccessGridPane.setVgap(10);
+        regSuccessGridPane.setPadding(new Insets(25, 25, 25, 25));
+        Text regSuccessText = new Text("Registration successful!");
+        regSuccessText.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        regSuccessGridPane.add(regSuccessText, 0, 0, 2, 1);
+        Button backtodashButton = new Button("Back to dashboard");
+        backtodashButton.setOnAction(e->window.setScene(dashboardScene));
+        regSuccessGridPane.add(backtodashButton, 1, 1);
+        
+        Scene regSuccessScene = new Scene(regSuccessGridPane);
+        submit.setOnAction(e->window.setScene(regSuccessScene));
+
+        
+        //Schedule appointment
+        GridPane scheduleGridPane = new GridPane();
+        scheduleGridPane.setAlignment(Pos.CENTER);
+        scheduleGridPane.setHgap(10);
+        scheduleGridPane.setVgap(10);
+        scheduleGridPane.setPadding(new Insets(25, 25, 25, 25));
+        Text scheduleText = new Text("Schedule an appointment");
+        scheduleText.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        scheduleGridPane.add(scheduleText, 0, 0, 2, 1);
+        
+        DatePicker myDatePicker = new DatePicker();
+        Label selectDateLabel = new Label("Select Date");
+        Label enterTimeLabel = new Label("Enter time");
+        TextField timeField = new TextField();
+        Label doctorLabel = new Label("Select doctor");
+        Label patientLabel = new Label("Select patient");
+        String doctor_list[] = {
+        		"Dr. ABC", "Dr. XYZ", "Dr. PQR"
+        		
+        };
+        ComboBox doctorsComboBox = new ComboBox(FXCollections.observableArrayList(doctor_list));
+        String patient_list[] = {
+        		"Patient A", "Patient B", "Patient C"
+        };
+        ComboBox<String>patientComboBox = new ComboBox<String>(
+        		FXCollections.observableArrayList(patient_list)
+        		);
+        
+        Button scheduleButton = new Button("Schedule");
+        Button backtodashButton2 = new Button("Back");
+        backtodashButton2.setOnAction(e->window.setScene(dashboardScene));
+        
+        scheduleGridPane.add(selectDateLabel, 0, 1);
+        scheduleGridPane.add(myDatePicker, 1, 1);
+        scheduleGridPane.add(enterTimeLabel, 0, 2);
+        scheduleGridPane.add(timeField, 1, 2);
+        scheduleGridPane.add(doctorLabel, 0, 3);
+        scheduleGridPane.add(doctorsComboBox, 1, 3);
+        scheduleGridPane.add(patientLabel, 0, 4);
+        scheduleGridPane.add(patientComboBox, 1, 4);
+        scheduleGridPane.add(scheduleButton, 0, 5);
+        scheduleGridPane.add(backtodashButton2, 1, 5);
+        
+        Scene scheduleScene = new Scene(scheduleGridPane,300,275);
+        scheduleApp.setOnAction(e->window.setScene(scheduleScene));
+        
+        //Appointment scheduled
+        GridPane scheduleSuccessGridPane = new GridPane();
+        scheduleSuccessGridPane.setAlignment(Pos.CENTER);
+        scheduleSuccessGridPane.setHgap(10);
+        scheduleSuccessGridPane.setVgap(10);
+        scheduleSuccessGridPane.setPadding(new Insets(25, 25, 25, 25));
+        Text scheduleSuccessText = new Text("Appointment scheduled!");
+        scheduleSuccessText.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        scheduleSuccessGridPane.add(scheduleSuccessText, 0, 0, 2, 1);
+        Button backtodashButton3 = new Button("Back to dashboard");
+        backtodashButton3.setOnAction(e->window.setScene(dashboardScene));
+        scheduleSuccessGridPane.add(backtodashButton3, 1, 1);
+        
+        Scene scheduleSuccessScene = new Scene(scheduleSuccessGridPane);
+        scheduleButton.setOnAction(e->window.setScene(scheduleSuccessScene));
+        
+    	}
+    	
+    	
+        catch (Exception e) {
+			// TODO: handle exception
+        	e.printStackTrace();
+		}
+
+        
+        
+        
+        
+      
+        
+        
     }
+    
 }
