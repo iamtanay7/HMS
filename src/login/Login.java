@@ -1,7 +1,9 @@
 package login;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
-
+import java.sql.Connection;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -22,20 +24,25 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
+import connectivity.ConnectionClass;
 public class Login extends Application {
+	Connection connection;
+	ConnectionClass obj;
 	Stage window;
+	
     public static void main(String[] args) {
-        launch(args);
+    	launch(args);       
     }
   
     @Override
     public void start(Stage primaryStage) {
     	try {
-			
+		obj = new ConnectionClass();
+		connection = obj.getConnection();
+		
 		    	//Welcome page
     	window = primaryStage;
-        primaryStage.setTitle("JavaFX Welcome");
+        primaryStage.setTitle("Hospital Management System");
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
@@ -66,7 +73,7 @@ public class Login extends Application {
 
         final Text actiontarget = new Text();
         grid.add(actiontarget, 1, 6);
-        Scene scene = new Scene(grid, 300, 275);
+        Scene scene = new Scene(grid, 600, 550);
         
 
         //Dashboard page
@@ -92,8 +99,21 @@ public class Login extends Application {
         
         
         back.setOnAction(e->window.setScene(scene));
-        Scene dashboardScene = new Scene(dashboard,300,275);
-        btn.setOnAction(e->window.setScene(dashboardScene));
+        Scene dashboardScene = new Scene(dashboard,600,550);
+        btn.setOnAction(new EventHandler<ActionEvent>() {
+        	public void handle(ActionEvent event) {
+        		
+        		if(userTextField.getText().equals("tanay") && pwBox.getText().equals("tanay")) {
+        			actiontarget.setFill(Color.GREEN);
+        			actiontarget.setText("Login successful");
+        			window.setScene(dashboardScene);
+        		}
+        		else {
+        			actiontarget.setFill(Color.RED);
+        			actiontarget.setText("Incorrect username or password");
+        		}
+        	};
+        });
         
         window.setScene(scene);
         window.show();
@@ -158,7 +178,7 @@ public class Login extends Application {
         newPatientGrid.add(currAddressTextField, 1, 7);
         newPatientGrid.add(permanentAddressTextField, 1, 8);
         
-        Scene patientRegistration = new Scene(newPatientGrid);
+        Scene patientRegistration = new Scene(newPatientGrid,600,550);
         newPatient.setOnAction(e->window.setScene(patientRegistration));
         
         
@@ -175,7 +195,7 @@ public class Login extends Application {
         backtodashButton.setOnAction(e->window.setScene(dashboardScene));
         regSuccessGridPane.add(backtodashButton, 1, 1);
         
-        Scene regSuccessScene = new Scene(regSuccessGridPane);
+        Scene regSuccessScene = new Scene(regSuccessGridPane,600,550);
         submit.setOnAction(e->window.setScene(regSuccessScene));
 
         
@@ -222,7 +242,7 @@ public class Login extends Application {
         scheduleGridPane.add(scheduleButton, 0, 5);
         scheduleGridPane.add(backtodashButton2, 1, 5);
         
-        Scene scheduleScene = new Scene(scheduleGridPane,300,275);
+        Scene scheduleScene = new Scene(scheduleGridPane,600,550);
         scheduleApp.setOnAction(e->window.setScene(scheduleScene));
         
         //Appointment scheduled
@@ -238,8 +258,13 @@ public class Login extends Application {
         backtodashButton3.setOnAction(e->window.setScene(dashboardScene));
         scheduleSuccessGridPane.add(backtodashButton3, 1, 1);
         
-        Scene scheduleSuccessScene = new Scene(scheduleSuccessGridPane);
+        Scene scheduleSuccessScene = new Scene(scheduleSuccessGridPane,600,550);
         scheduleButton.setOnAction(e->window.setScene(scheduleSuccessScene));
+        
+        
+        
+        
+        connection.close();
         
     	}
     	
