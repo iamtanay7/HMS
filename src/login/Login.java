@@ -1,11 +1,16 @@
 package login;
 
-import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Observable;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Date;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -16,26 +21,61 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import connectivity.ConnectionClass;
+import java.time.LocalDate;
+
 public class Login extends Application {
 	Connection connection;
 	ConnectionClass obj;
 	Stage window;
-	
+	TableView<Patient>PatientTable;
+	ComboBox<String>doctorsComboBox,patientComboBox = new ComboBox<String>();
     public static void main(String[] args) {
     	launch(args);       
     }
-  
+    public ObservableList<Patient> getPatient(){ 
+    	ObservableList<Patient> patients = FXCollections.observableArrayList();
+    	try {
+			PreparedStatement pS = connection.prepareStatement("select * from patient");
+			ResultSet rs = pS.executeQuery();
+			while(rs.next()) {
+				Patient p = new Patient();
+				p.setId(rs.getInt(1));
+				p.setPatient_name(rs.getString(2));
+				p.setPatient_email(rs.getString(3));			
+				p.setPatient_phone(rs.getString(4));
+				p.setE_name(rs.getString(5));
+				p.setE_phone(rs.getString(6));
+				p.setReason(rs.getString(7));
+				p.setC_address(rs.getString(8));
+				p.setP_address(rs.getString(9));
+				System.out.println(rs.getString("patient_name"));
+				
+				
+				patients.add(p);
+			}
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return patients; 
+    }
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws SQLException {
     	try {
 		obj = new ConnectionClass();
 		connection = obj.getConnection();
@@ -73,6 +113,10 @@ public class Login extends Application {
 
         final Text actiontarget = new Text();
         grid.add(actiontarget, 1, 6);
+        
+        
+        
+
         Scene scene = new Scene(grid, 600, 550);
         
 
@@ -85,14 +129,14 @@ public class Login extends Application {
         dashboard.setPadding(new Insets(25, 25, 25, 25));
         Button back = new Button("Logout");
         Button newPatient = new Button("New Patient registration");
-        Button modifyPatient = new Button("View/modify patient records");
-        Button modifyStaff = new Button("View/modify staff details");
+        Button viewPatient = new Button("View patient records");
+        //Button modifyStaff = new Button("View staff details");
         Button scheduleApp = new Button("Schedule an appointment");
         dashboard.add(back, 0, 5);
         dashboard.add(newPatient, 0, 1);
-        dashboard.add(modifyPatient, 0, 2);
-        dashboard.add(modifyStaff, 0, 3);
-        dashboard.add(scheduleApp, 0, 4);
+        dashboard.add(viewPatient, 0, 2);
+        //dashboard.add(modifyStaff, 0, 3);
+        dashboard.add(scheduleApp, 0, 3);
         Text dash = new Text("Dashboard");
         dash.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         dashboard.add(dash, 0, 0, 2, 1);
@@ -105,7 +149,6 @@ public class Login extends Application {
         		
         		if(userTextField.getText().equals("tanay") && pwBox.getText().equals("tanay")) {
         			actiontarget.setFill(Color.GREEN);
-        			actiontarget.setText("Login successful");
         			window.setScene(dashboardScene);
         		}
         		else {
@@ -196,7 +239,32 @@ public class Login extends Application {
         regSuccessGridPane.add(backtodashButton, 1, 1);
         
         Scene regSuccessScene = new Scene(regSuccessGridPane,600,550);
-        submit.setOnAction(e->window.setScene(regSuccessScene));
+        submit.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String query = "insert into patient(patient_name,patient_email,patient_phone,e_name,e_phone,reason,c_address,p_address) values (?,?,?,?,?,?,?,?)";
+				try {
+					PreparedStatement pStatement = connection.prepareStatement(query);
+					pStatement.setString(1, nameTextField.getText());
+					pStatement.setString(2, emailTextField.getText());
+					pStatement.setString(3, phoneTextField.getText());
+					pStatement.setString(4, egNameTextField.getText());
+					pStatement.setString(5, egPhoneTextField.getText());
+					pStatement.setString(6, reasonTextField.getText());
+					pStatement.setString(7, currAddressTextField.getText());
+					pStatement.setString(8, permanentAddressTextField.getText());
+					int i = pStatement.executeUpdate();
+					System.out.println(i+" records inserted");
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				window.setScene(regSuccessScene);
+				
+			}
+		});
 
         
         //Schedule appointment
@@ -215,17 +283,9 @@ public class Login extends Application {
         TextField timeField = new TextField();
         Label doctorLabel = new Label("Select doctor");
         Label patientLabel = new Label("Select patient");
-        String doctor_list[] = {
-        		"Dr. ABC", "Dr. XYZ", "Dr. PQR"
-        		
-        };
-        ComboBox doctorsComboBox = new ComboBox(FXCollections.observableArrayList(doctor_list));
-        String patient_list[] = {
-        		"Patient A", "Patient B", "Patient C"
-        };
-        ComboBox<String>patientComboBox = new ComboBox<String>(
-        		FXCollections.observableArrayList(patient_list)
-        		);
+        ArrayList<String>patient_list = new ArrayList<String>();
+        ArrayList<String>doctor_list = new ArrayList<String>();
+        
         
         Button scheduleButton = new Button("Schedule");
         Button backtodashButton2 = new Button("Back");
@@ -236,14 +296,48 @@ public class Login extends Application {
         scheduleGridPane.add(enterTimeLabel, 0, 2);
         scheduleGridPane.add(timeField, 1, 2);
         scheduleGridPane.add(doctorLabel, 0, 3);
-        scheduleGridPane.add(doctorsComboBox, 1, 3);
+      
         scheduleGridPane.add(patientLabel, 0, 4);
-        scheduleGridPane.add(patientComboBox, 1, 4);
+        
         scheduleGridPane.add(scheduleButton, 0, 5);
         scheduleGridPane.add(backtodashButton2, 1, 5);
         
         Scene scheduleScene = new Scene(scheduleGridPane,600,550);
-        scheduleApp.setOnAction(e->window.setScene(scheduleScene));
+        
+        scheduleApp.setOnAction(new EventHandler<ActionEvent>() {
+        	public void handle(ActionEvent event) {
+        		try {
+					PreparedStatement ps = connection.prepareStatement("select patient_name from patient");
+					ResultSet rs = ps.executeQuery();
+					patient_list.clear();
+					doctor_list.clear();
+					while(rs.next()) {
+						patient_list.add(rs.getString(1));
+					}
+					ps = connection.prepareStatement("select doctor_name from doctor");
+					 rs = ps.executeQuery();
+						
+						while(rs.next()) {
+							doctor_list.add(rs.getString(1));
+						}
+					
+					doctorsComboBox = new ComboBox<String>(FXCollections.observableArrayList(doctor_list));
+			        
+			        patientComboBox = new ComboBox<String>(
+			        		FXCollections.observableArrayList(patient_list)
+			        		);
+			        scheduleGridPane.add(doctorsComboBox, 1, 3);
+			        scheduleGridPane.add(patientComboBox, 1, 4);
+					window.setScene(scheduleScene);
+					
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		
+        		
+        	};
+        });
         
         //Appointment scheduled
         GridPane scheduleSuccessGridPane = new GridPane();
@@ -259,12 +353,81 @@ public class Login extends Application {
         scheduleSuccessGridPane.add(backtodashButton3, 1, 1);
         
         Scene scheduleSuccessScene = new Scene(scheduleSuccessGridPane,600,550);
-        scheduleButton.setOnAction(e->window.setScene(scheduleSuccessScene));
+        scheduleButton.setOnAction(new EventHandler<ActionEvent>(){
+        	@Override
+        	public void handle(ActionEvent arg0) {
+        		// TODO Auto-generated method stub
+        		
+        		try {
+        			
+					PreparedStatement ps = connection.prepareStatement("insert into appointment(date,time,patient_name,doctor_name) values (?,?,?,?)");
+					ps.setDate(1, Date.valueOf(myDatePicker.getValue()));
+					ps.setInt(2, Integer.parseInt(timeField.getText()));
+					ps.setString(4, doctorsComboBox.getValue() );
+					ps.setString(3, patientComboBox.getValue());
+					ps.executeUpdate();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		window.setScene(scheduleSuccessScene);
+        	}
+		});
+        
+        // Patient details table
+        TableColumn<Patient, Integer> idCol = new TableColumn<>("Patient ID");
+        idCol.setMinWidth(200);
+        idCol.setCellValueFactory(new PropertyValueFactory<Patient,Integer>("id"));
+        
+        TableColumn<Patient, String> nameCol = new TableColumn<>("Patient Name");
+        nameCol.setMinWidth(200);
+        nameCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_name"));
+        
+        TableColumn<Patient, String> emailCol = new TableColumn<>("Patient Email");
+        emailCol.setMinWidth(200);
+        emailCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_email"));
+        
+        TableColumn<Patient, String> phoneCol = new TableColumn<>("Patient Phone");
+        phoneCol.setMinWidth(200);
+        phoneCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_phone"));
+        
+        TableColumn<Patient, String> eNameCol = new TableColumn<>("Emergency Contact Name");
+        eNameCol.setMinWidth(200);
+        eNameCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("e_name"));
+        
+        TableColumn<Patient, String> ePhoneCol = new TableColumn<>("Emergency Contact Phone");
+        ePhoneCol.setMinWidth(200);
+        ePhoneCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("e_phone"));
+        
+        TableColumn<Patient, String> reasonCol = new TableColumn<>("Reason");
+        reasonCol.setMinWidth(200);
+        reasonCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("reason"));
+        
+       
+        
+        TableColumn<Patient, String> cAddressCol = new TableColumn<>("Current Address");
+        cAddressCol.setMinWidth(200);
+        cAddressCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("c_address"));
+        
+        TableColumn<Patient, String> pAddressCol = new TableColumn<>("Permanent Address");
+        pAddressCol.setMinWidth(200);
+        pAddressCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("p_address"));
+        
+        PatientTable = new TableView<Patient>();
+        PatientTable.setItems(getPatient());
+        PatientTable.getColumns().addAll(idCol, nameCol, emailCol, phoneCol, eNameCol, ePhoneCol, reasonCol,
+        		cAddressCol, pAddressCol);
+        
+        VBox patientBox = new VBox();
+        patientBox.getChildren().addAll(PatientTable);
+        Button back3 = new Button("Back");
+        back3.setOnAction(e->window.setScene(dashboardScene));
+        patientBox.getChildren().add(back3);
+        Scene patientDetails = new Scene(patientBox, 800,400);
+        
+        viewPatient.setOnAction(e->window.setScene(patientDetails));
         
         
-        
-        
-        connection.close();
         
     	}
     	
@@ -272,6 +435,10 @@ public class Login extends Application {
         catch (Exception e) {
 			// TODO: handle exception
         	e.printStackTrace();
+		}
+    	finally {
+    		//connection.close();
+    		System.out.println("Finished");
 		}
 
         
