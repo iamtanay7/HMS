@@ -1,4 +1,4 @@
-package login;
+package hospital;
 
 public class Patient {
 	private String patient_name, patient_email, patient_phone,
@@ -44,7 +44,12 @@ public class Patient {
 	}
 
 	public void setPatient_email(String patient_email) {
+		
+		if(patient_email.contains("@"))
 		this.patient_email = patient_email;
+		else {
+			throw new IllegalArgumentException("Email should contain @");
+		}
 	}
 
 	public String getPatient_phone() {
@@ -52,6 +57,9 @@ public class Patient {
 	}
 
 	public void setPatient_phone(String patient_phone) {
+		if(patient_phone.length()!=10) {
+			throw new IllegalArgumentException("Phone number should be of length 10");
+		}
 		this.patient_phone = patient_phone;
 	}
 

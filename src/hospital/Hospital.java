@@ -1,4 +1,4 @@
-package login;
+package hospital;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -36,11 +36,12 @@ import javafx.stage.Stage;
 import connectivity.ConnectionClass;
 import java.time.LocalDate;
 
-public class Login extends Application {
+public class Hospital extends Application {
 	Connection connection;
 	ConnectionClass obj;
 	Stage window;
 	TableView<Patient>PatientTable;
+	TableView<Appointment>AppointmentTable;
 	ComboBox<String>doctorsComboBox,patientComboBox = new ComboBox<String>();
     public static void main(String[] args) {
     	launch(args);       
@@ -74,6 +75,33 @@ public class Login extends Application {
 		}
     	return patients; 
     }
+    public ObservableList<Appointment> getAppointment(){ 
+    	ObservableList<Appointment> appointments = FXCollections.observableArrayList();
+    	try {
+			PreparedStatement pS = connection.prepareStatement("select * from appointment order by date DESC");
+			ResultSet rs = pS.executeQuery();
+			while(rs.next()) {
+				Appointment a = new Appointment();
+				a.setDate(rs.getDate("date"));
+				a.setTime(rs.getInt("time"));
+				a.setPatient_name(rs.getString("patient_name"));
+				a.setDoctor_name(rs.getString("doctor_name"));
+				appointments.add(a);
+				
+				
+			}
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return appointments; 
+    }
+    
+    
+    
+    
     @Override
     public void start(Stage primaryStage) throws SQLException {
     	try {
@@ -131,12 +159,14 @@ public class Login extends Application {
         Button newPatient = new Button("New Patient registration");
         Button viewPatient = new Button("View patient records");
         //Button modifyStaff = new Button("View staff details");
+        Button viewApps = new Button("View appointments");
         Button scheduleApp = new Button("Schedule an appointment");
         dashboard.add(back, 0, 5);
         dashboard.add(newPatient, 0, 1);
         dashboard.add(viewPatient, 0, 2);
         //dashboard.add(modifyStaff, 0, 3);
         dashboard.add(scheduleApp, 0, 3);
+        dashboard.add(viewApps, 0, 4);
         Text dash = new Text("Dashboard");
         dash.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         dashboard.add(dash, 0, 0, 2, 1);
@@ -375,58 +405,95 @@ public class Login extends Application {
 		});
         
         // Patient details table
-        TableColumn<Patient, Integer> idCol = new TableColumn<>("Patient ID");
-        idCol.setMinWidth(200);
-        idCol.setCellValueFactory(new PropertyValueFactory<Patient,Integer>("id"));
         
-        TableColumn<Patient, String> nameCol = new TableColumn<>("Patient Name");
-        nameCol.setMinWidth(200);
-        nameCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_name"));
         
-        TableColumn<Patient, String> emailCol = new TableColumn<>("Patient Email");
-        emailCol.setMinWidth(200);
-        emailCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_email"));
-        
-        TableColumn<Patient, String> phoneCol = new TableColumn<>("Patient Phone");
-        phoneCol.setMinWidth(200);
-        phoneCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_phone"));
-        
-        TableColumn<Patient, String> eNameCol = new TableColumn<>("Emergency Contact Name");
-        eNameCol.setMinWidth(200);
-        eNameCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("e_name"));
-        
-        TableColumn<Patient, String> ePhoneCol = new TableColumn<>("Emergency Contact Phone");
-        ePhoneCol.setMinWidth(200);
-        ePhoneCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("e_phone"));
-        
-        TableColumn<Patient, String> reasonCol = new TableColumn<>("Reason");
-        reasonCol.setMinWidth(200);
-        reasonCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("reason"));
-        
-       
-        
-        TableColumn<Patient, String> cAddressCol = new TableColumn<>("Current Address");
-        cAddressCol.setMinWidth(200);
-        cAddressCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("c_address"));
-        
-        TableColumn<Patient, String> pAddressCol = new TableColumn<>("Permanent Address");
-        pAddressCol.setMinWidth(200);
-        pAddressCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("p_address"));
-        
-        PatientTable = new TableView<Patient>();
-        PatientTable.setItems(getPatient());
-        PatientTable.getColumns().addAll(idCol, nameCol, emailCol, phoneCol, eNameCol, ePhoneCol, reasonCol,
-        		cAddressCol, pAddressCol);
-        
-        VBox patientBox = new VBox();
-        patientBox.getChildren().addAll(PatientTable);
-        Button back3 = new Button("Back");
-        back3.setOnAction(e->window.setScene(dashboardScene));
-        patientBox.getChildren().add(back3);
-        Scene patientDetails = new Scene(patientBox, 800,400);
-        
-        viewPatient.setOnAction(e->window.setScene(patientDetails));
-        
+        viewPatient.setOnAction(new EventHandler<ActionEvent>() {
+        	public void handle(ActionEvent event) {
+        		TableColumn<Patient, Integer> idCol = new TableColumn<>("Patient ID");
+                idCol.setMinWidth(200);
+                idCol.setCellValueFactory(new PropertyValueFactory<Patient,Integer>("id"));
+                
+                TableColumn<Patient, String> nameCol = new TableColumn<>("Patient Name");
+                nameCol.setMinWidth(200);
+                nameCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_name"));
+                
+                TableColumn<Patient, String> emailCol = new TableColumn<>("Patient Email");
+                emailCol.setMinWidth(200);
+                emailCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_email"));
+                
+                TableColumn<Patient, String> phoneCol = new TableColumn<>("Patient Phone");
+                phoneCol.setMinWidth(200);
+                phoneCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("patient_phone"));
+                
+                TableColumn<Patient, String> eNameCol = new TableColumn<>("Emergency Contact Name");
+                eNameCol.setMinWidth(200);
+                eNameCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("e_name"));
+                
+                TableColumn<Patient, String> ePhoneCol = new TableColumn<>("Emergency Contact Phone");
+                ePhoneCol.setMinWidth(200);
+                ePhoneCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("e_phone"));
+                
+                TableColumn<Patient, String> reasonCol = new TableColumn<>("Reason");
+                reasonCol.setMinWidth(200);
+                reasonCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("reason"));
+                
+               
+                
+                TableColumn<Patient, String> cAddressCol = new TableColumn<>("Current Address");
+                cAddressCol.setMinWidth(200);
+                cAddressCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("c_address"));
+                
+                TableColumn<Patient, String> pAddressCol = new TableColumn<>("Permanent Address");
+                pAddressCol.setMinWidth(200);
+                pAddressCol.setCellValueFactory(new PropertyValueFactory<Patient,String>("p_address"));
+                
+                PatientTable = new TableView<Patient>();
+                PatientTable.setItems(getPatient());
+                PatientTable.getColumns().addAll(idCol, nameCol, emailCol, phoneCol, eNameCol, ePhoneCol, reasonCol,
+                		cAddressCol, pAddressCol);
+                
+                VBox patientBox = new VBox();
+                patientBox.getChildren().addAll(PatientTable);
+                Button back3 = new Button("Back");
+                back3.setOnAction(e->window.setScene(dashboardScene));
+                patientBox.getChildren().add(back3);
+                Scene patientDetails = new Scene(patientBox, 800,400);
+                window.setScene(patientDetails);
+        	};
+        });
+        viewApps.setOnAction(new EventHandler<ActionEvent>() {
+        	public void handle(ActionEvent event) {
+        		TableColumn<Appointment, Date> dateCol = new TableColumn<>("Date");
+                dateCol.setMinWidth(200);
+                dateCol.setCellValueFactory(new PropertyValueFactory<Appointment,Date>("date"));
+                
+                TableColumn<Appointment, Integer> timeCol = new TableColumn<>("Time");
+                timeCol.setMinWidth(200);
+                timeCol.setCellValueFactory(new PropertyValueFactory<Appointment,Integer>("time"));
+                
+                TableColumn<Appointment, String> patientCol = new TableColumn<>("Patient");
+                patientCol.setMinWidth(200);
+                patientCol.setCellValueFactory(new PropertyValueFactory<Appointment,String>("patient_name"));
+                
+                TableColumn<Appointment, String> doctorCol = new TableColumn<>("Doctor");
+                doctorCol.setMinWidth(200);
+                doctorCol.setCellValueFactory(new PropertyValueFactory<Appointment,String>("doctor_name"));
+                
+               
+                
+                AppointmentTable = new TableView<Appointment>();
+                AppointmentTable.setItems(getAppointment());
+                AppointmentTable.getColumns().addAll(dateCol, timeCol, patientCol, doctorCol);
+                
+                VBox appBox = new VBox();
+                appBox.getChildren().addAll(AppointmentTable);
+                Button back3 = new Button("Back");
+                back3.setOnAction(e->window.setScene(dashboardScene));
+                appBox.getChildren().add(back3);
+                Scene appDetails = new Scene(appBox, 800,400);
+                window.setScene(appDetails);
+        	};
+        });
         
         
     	}
